@@ -1,21 +1,31 @@
-import { getQuery } from "./api-pixabay";
+import {getQuery, getLoadMore} from "./api-pixabay";
 import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+let page = 1;
 
 const refs = {
-    form: document.querySelector('#search-form'),
-    input: document.querySelector('[name="searchQuery"]'),
-    gallery: document.querySelector('.gallery')
+  form: document.querySelector('#search-form'),
+  input: document.querySelector('[name="searchQuery"]'),
+  gallery: document.querySelector('.gallery'),
+  loadMore: document.querySelector('.load-more')
 }
-
 refs.form.addEventListener('submit', onSubmit);
 
+refs.loadMore.addEventListener('click', onLoadMore);
+refs.input.addEventListener('change', onChangeInput);
+
+function onChangeInput(event) {
+  refs.loadMore.classList.add('hidden');
+  page = 1;
+}
 
 async function onSubmit(event) {
-    event.preventDefault();
-try {
-  const response = await getQuery(refs.input.value)
+  event.preventDefault();
+  inputValue = refs.input.value;
+  try {
+    refs.gallery.innerHTML = "";
+  const response = await getQuery(refs.input.value, page)
   
     if (!response.data.total) {
         Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.'); 
@@ -23,11 +33,28 @@ try {
   await makeCard(response.data.hits)
 
   const gallery = new SimpleLightbox('.gallery a');
-  
-} catch (error) {
+  refs.loadMore.classList.remove('hidden');
+  } catch (error) {
+    console.log(error);
    Notiflix.Notify.failure('Sorry, error get data. Please try again.');
 }
 }
+
+async function onLoadMore(event) {
+  event.preventDefault();
+  page += 1;
+try {
+  const response = await getLoadMore(refs.input.value, page);
+  console.log(response);
+  await makeCard(response.data.hits)
+  const gallery = new SimpleLightbox('.gallery a');
+  gallery.refresh();
+} catch (error) {
+  console.log(error);
+  Notiflix.Notify.failure('Sorry, error get data. Please try again.');
+}
+}
+
  
 function makeCard(arr) {
     return arr.forEach(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => { 
