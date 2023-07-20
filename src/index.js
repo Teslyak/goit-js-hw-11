@@ -2,7 +2,7 @@ import {getQuery} from "./api-pixabay";
 import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-let page = 400;
+let page = 1;
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -17,7 +17,7 @@ refs.input.addEventListener('change', onChangeInput);
 
 function onChangeInput(event) {
   refs.loadMore.classList.add('hidden');
-  page = 12;
+  page = 1;
 }
 
 async function onSubmit(event) {
