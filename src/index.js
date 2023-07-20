@@ -22,7 +22,6 @@ function onChangeInput(event) {
 
 async function onSubmit(event) {
   event.preventDefault();
-  inputValue = refs.input.value;
   try {
     refs.gallery.innerHTML = "";
   const response = await getQuery(refs.input.value, page)
