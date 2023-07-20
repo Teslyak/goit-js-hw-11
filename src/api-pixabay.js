@@ -12,10 +12,4 @@ const response = await axios.get(
 return response;
 };
 
-async function getLoadMore(value, page) {
-const response = await axios.get(
-    `${BASE_URL}?key=${API_KEY}&q=${value}&${QUERY_OPT}&page=${page}&per_page=${PER_PAGE}`);
-    return response;
-}
-
-export {getQuery, getLoadMore}
+export {getQuery}

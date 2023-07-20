@@ -1,8 +1,8 @@
-import {getQuery, getLoadMore} from "./api-pixabay";
+import {getQuery} from "./api-pixabay";
 import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-let page = 1;
+let page = 400;
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -17,7 +17,7 @@ refs.input.addEventListener('change', onChangeInput);
 
 function onChangeInput(event) {
   refs.loadMore.classList.add('hidden');
-  page = 1;
+  page = 12;
 }
 
 async function onSubmit(event) {
@@ -43,9 +43,13 @@ async function onSubmit(event) {
 async function onLoadMore(event) {
   event.preventDefault();
   page += 1;
-try {
-  const response = await getLoadMore(refs.input.value, page);
-  console.log(response);
+  try {
+    const response = await getQuery(refs.input.value, page);
+    if (page >= response.data.totalHits) {
+      Notiflix.Notify.info('End of collection');
+      refs.loadMore.classList.add('hidden');
+      return
+    }
   await makeCard(response.data.hits)
   const gallery = new SimpleLightbox('.gallery a');
   gallery.refresh();
