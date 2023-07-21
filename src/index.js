@@ -9,63 +9,63 @@ const refs = {
   form: document.querySelector('#search-form'),
   input: document.querySelector('[name="searchQuery"]'),
   gallery: document.querySelector('.gallery'),
-  loadMore: document.querySelector('.load-more')
-}
+  guard: document.querySelector('.js-guard')
+};
+
 refs.form.addEventListener('submit', onSubmit);
 
-refs.loadMore.addEventListener('click', onLoadMore);
+
+const options = {
+    root: null,
+    rootMargin: '500px',
+    threshold: 1.0
+}
+const observer = new IntersectionObserver(onLoadMore, options);
 
 
 function onChangeInput(event) {
-  refs.loadMore.classList.add('hidden');
   page = 1;
 };
 
 async function onSubmit(event) {
   event.preventDefault();
+  
   if (!refs.input.value) {
     Notiflix.Notify.warning('Please enter data to search');
     return;
   };
+
+  if (refs.input.value === refs.input.value) {
+    page = 1;
+  }
 
   try {
     refs.gallery.innerHTML = "";
     const response = await getQuery(refs.input.value, page, per_page);
     Notiflix.Notify.info(`Hooray! We found ${response.data.totalHits} images.`);  
     if (!response.data.total) {
-      refs.loadMore.classList.add('hidden');
       Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.'); 
       return;
     };
     await makeCard(response.data.hits);
-
     SimpleLightboxGallery = new SimpleLightbox('.gallery a');
-  
-  refs.loadMore.classList.remove('hidden');
+  observer.observe(refs.guard);
   } catch (error) {
-
+console.log(error);
    Notiflix.Notify.failure('Sorry, error get data. Please try again.');
   };
 };
 
-async function onLoadMore(event) {
+function onLoadMore(entries, observer) {
+  console.log(entries);
   refs.input.addEventListener('change', onChangeInput);
-  page += 1;
-  try {
-    const response = await getQuery(refs.input.value, page, per_page);
-    const max_page = (response.data.totalHits / per_page)^0 ;
-    if (page >= max_page) {
-      Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
-      refs.loadMore.classList.add('hidden');
-      return;
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      page += 1;
+      queryLoadMore();
     }
-    await makeCard(response.data.hits);
-    SimpleLightboxGallery.refresh();
-    await scrollSmooth();
-    
-} catch (error) {
-  Notiflix.Notify.failure('Sorry, error get data. Please try again.');
-}
+  });
+
 }
 
  
@@ -102,7 +102,30 @@ function scrollSmooth() {
   .firstElementChild.getBoundingClientRect();
 
 window.scrollBy({
-  top: cardHeight * 2,
+  top: cardHeight * 2 ,
   behavior: "smooth",
 });
 };
+
+async function queryLoadMore() {
+    try {
+    const response = await getQuery(refs.input.value, page, per_page);
+    console.log(response);
+      const max_page = (response.data.totalHits / per_page) ^ 1;
+      console.log(max_page);
+      if (page >= max_page) {
+        observer.unobserve(refs.guard);
+      Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+      return;
+    }
+     await makeCard(response.data.hits);
+    SimpleLightboxGallery.refresh();
+    await scrollSmooth();
+    
+  } catch (error) {
+    console.log(error);
+  Notiflix.Notify.failure('Sorry, error get data. Please try again.');
+}
+}
+
+
