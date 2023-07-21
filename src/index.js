@@ -51,13 +51,11 @@ async function onSubmit(event) {
     SimpleLightboxGallery = new SimpleLightbox('.gallery a');
   observer.observe(refs.guard);
   } catch (error) {
-console.log(error);
    Notiflix.Notify.failure('Sorry, error get data. Please try again.');
   };
 };
 
 function onLoadMore(entries, observer) {
-  console.log(entries);
   refs.input.addEventListener('change', onChangeInput);
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -110,9 +108,7 @@ window.scrollBy({
 async function queryLoadMore() {
     try {
     const response = await getQuery(refs.input.value, page, per_page);
-    console.log(response);
       const max_page = (response.data.totalHits / per_page) ^ 1;
-      console.log(max_page);
       if (page >= max_page) {
         observer.unobserve(refs.guard);
       Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
@@ -123,7 +119,6 @@ async function queryLoadMore() {
     await scrollSmooth();
     
   } catch (error) {
-    console.log(error);
   Notiflix.Notify.failure('Sorry, error get data. Please try again.');
 }
 }
