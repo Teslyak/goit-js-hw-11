@@ -30,18 +30,18 @@ function onChangeInput(event) {
 async function onSubmit(event) {
   event.preventDefault();
   
-  if (!refs.input.value) {
+  if (!refs.input.value.trim()) {
     Notiflix.Notify.warning('Please enter data to search');
     return;
   };
 
-  if (refs.input.value === refs.input.value) {
+  if (refs.input.value.trim() === refs.input.value.trim()) {
     page = 1;
   }
 
   try {
     refs.gallery.innerHTML = "";
-    const response = await getQuery(refs.input.value, page, per_page);
+    const response = await getQuery(refs.input.value.trim(), page, per_page);
     Notiflix.Notify.info(`Hooray! We found ${response.data.totalHits} images.`);  
     if (!response.data.total) {
       Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.'); 
@@ -107,12 +107,15 @@ window.scrollBy({
 
 async function queryLoadMore() {
     try {
-    const response = await getQuery(refs.input.value, page, per_page);
-      const max_page = (response.data.totalHits / per_page) ^ 1;
-      if (page >= max_page) {
+      const response = await getQuery(refs.input.value.trim(), page, per_page);
+      const max_page = Math.ceil(response.data.totalHits / per_page);
+      if (page > max_page) {
         observer.unobserve(refs.guard);
-      Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+        Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
       return;
+      } else if (page >= max_page) {
+        observer.unobserve(refs.guard);
+        Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
     }
      await makeCard(response.data.hits);
     SimpleLightboxGallery.refresh();
